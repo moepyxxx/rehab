@@ -37,6 +37,7 @@ export default function Home() {
 			container: mapContainerRef.current,
 			center,
 			zoom,
+			language: "ja",
 		});
 	}, [center, zoom]);
 
