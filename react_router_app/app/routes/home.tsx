@@ -1,69 +1,86 @@
-import type { Route } from "./+types/home";
-import { useRef, useEffect, useState } from "react";
 import mapboxgl from "mapbox-gl";
+import { useEffect, useRef, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
+export function meta() {
+	return [
+		{ title: "New React Router App" },
+		{ name: "description", content: "Welcome to React Router!" },
+	];
 }
 
-const INITIAL_CENTER: mapboxgl.LngLatLike = [-74.0242, 40.6941];
-const INITIAL_ZOOM = 10.12;
+const INITIAL_CENTER: [number, number] = [-74.0242, 40.6941];
+const INITIAL_ZOOM = 15;
 
 export default function Home() {
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+	const mapRef = useRef<mapboxgl.Map | null>(null);
+	const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const [center, setCenter] = useState<mapboxgl.LngLatLike>(INITIAL_CENTER);
-  const [zoom, setZoom] = useState(INITIAL_ZOOM);
+	const [center, setCenter] = useState<[number, number] | null>(null);
+	const [zoom, setZoom] = useState(INITIAL_ZOOM);
 
-  useEffect(() => {
-    if (mapContainerRef.current === null) return;
+	useEffect(() => {
+		navigator.geolocation.getCurrentPosition(
+			(p) => setCenter([p.coords.longitude, p.coords.latitude]),
+			(_e) => {
+				return setCenter(INITIAL_CENTER);
+			},
+		);
+	}, []);
 
-    mapRef.current = new mapboxgl.Map({
-      accessToken: import.meta.env.VITE_MAPBOX_ACCESS_TOKEN,
-      container: mapContainerRef.current,
-      center,
-      zoom,
-    });
+	useEffect(() => {
+		if (mapContainerRef.current === null) return;
+		if (center === null) return;
 
-    mapRef.current.on("move", () => {
-      if (mapRef.current === null) return;
-      const mapCenter = mapRef.current.getCenter();
-      const mapZoom = mapRef.current.getZoom();
+		mapRef.current = new mapboxgl.Map({
+			accessToken: import.meta.env.VITE_MAPBOX_ACCESS_TOKEN,
+			container: mapContainerRef.current,
+			center,
+			zoom,
+		});
+	}, [center, zoom]);
 
-      setCenter([mapCenter.lng, mapCenter.lat]);
-      setZoom(mapZoom);
-    });
+	useEffect(() => {
+		if (mapRef.current === null) return;
 
-    return () => {
-      if (mapRef.current === null) return;
-      mapRef.current.remove();
-    };
-  }, []);
+		mapRef.current.on("move", () => {
+			if (mapRef.current === null) return;
+			const mapCenter = mapRef.current.getCenter();
+			const mapZoom = mapRef.current.getZoom();
 
-  const handleButtonClick = () => {
-    mapRef.current?.flyTo({
-      center: INITIAL_CENTER,
-      zoom: INITIAL_ZOOM,
-    });
-  };
+			setCenter([mapCenter.lng, mapCenter.lat]);
+			setZoom(mapZoom);
+		});
 
-  return (
-    <>
-      <div id="root">
-        <div className="sidebar">
-          Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)} |
-          Zoom: {zoom.toFixed(2)}
-        </div>
-        <button className="reset-button" onClick={handleButtonClick}>
-          Reset
-        </button>
-        <div id="map-container" ref={mapContainerRef} />
-      </div>
-    </>
-  );
+		return () => {
+			if (mapRef.current === null) return;
+			mapRef.current.remove();
+		};
+	}, []);
+
+	const handleButtonClick = () => {
+		mapRef.current?.flyTo({
+			center: INITIAL_CENTER,
+			zoom: INITIAL_ZOOM,
+		});
+	};
+
+	const long = center ? center[0].toFixed(4) : "x";
+	const lat = center ? center[1].toFixed(4) : "x";
+
+	return (
+		<div id="root">
+			<div className="sidebar">
+				Longitude: {long} | Latitude: {lat}| Zoom: {zoom.toFixed(2)}
+			</div>
+			<button
+				type="button"
+				className="reset-button"
+				onClick={handleButtonClick}
+			>
+				Reset
+			</button>
+			<div id="map-container" ref={mapContainerRef} />
+		</div>
+	);
 }

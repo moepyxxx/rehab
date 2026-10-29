@@ -1,0 +1,25 @@
+{
+  "editor.defaultFormatter": "biomejs.biome",
+  "biome.configurationPath": "./react_router_app/biome.json",
+	"biome.lsp.bin": "./react_router_app/node_modules/.bin/biome",
+  "editor.formatOnSave": true,
+  "biome.enabled": true,
+
+  "editor.codeActionsOnSave": {
+    "quickfix.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
+  },
+
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  }
+}
